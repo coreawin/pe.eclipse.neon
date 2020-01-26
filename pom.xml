@@ -29,4 +29,36 @@
       <url>https://repo.maven.apache.org/maven2</url>
     </pluginRepository>
   </pluginRepositories>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.apache.poi</groupId>
+  		<artifactId>poi-ooxml</artifactId>
+  		<version>4.1.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.apache.poi</groupId>
+  		<artifactId>poi-ooxml-schemas</artifactId>
+  		<version>4.1.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.apache.poi</groupId>
+  		<artifactId>poi</artifactId>
+  		<version>4.1.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.apache.poi</groupId>
+  		<artifactId>poi-scratchpad</artifactId>
+  		<version>4.1.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.apache.xmlbeans</groupId>
+  		<artifactId>xmlbeans</artifactId>
+  		<version>3.1.0</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>ch.qos.logback</groupId>
+  		<artifactId>logback-classic</artifactId>
+  		<version>1.2.3</version>
+  	</dependency>
+  </dependencies>
 </project>

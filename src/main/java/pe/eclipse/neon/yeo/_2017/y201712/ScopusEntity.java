@@ -3,7 +3,6 @@ package pe.eclipse.neon.yeo._2017.y201712;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -29,15 +27,14 @@ public class ScopusEntity extends FileRW {
 	Map<String, String> totalDatasTech = new HashMap<String, String>();
 
 	/**
-	 * @param path
-	 *            분석 대상이 있는 파일 패스
+	 * @param path 분석 대상이 있는 파일 패스
 	 */
 	public ScopusEntity(String path) {
 		srcPath = new File(path);
 		listingFile(srcPath);
 		flist.addAll(0, fslist);
 		flist.addAll(flist.size(), fplist);
-		
+
 		for (File f : flist) {
 			if (f.getParent().indexOf("논문") != -1) {
 				isScopus = true;
@@ -45,10 +42,10 @@ public class ScopusEntity extends FileRW {
 				isScopus = false;
 			}
 			System.out.println("q read File " + f.getName() + "\t[SCOPUS doc]:" + isScopus);
-			 ana(f);
+			ana(f);
 		}
 		// 기술별 지표를 작성한다.
-		 createReport기술별계수정보();
+		createReport기술별계수정보();
 	}
 
 	List<File> fslist = new LinkedList<File>();
@@ -85,7 +82,7 @@ public class ScopusEntity extends FileRW {
 
 	private void listingFile(File file) {
 		File[] files = file.listFiles();
-		files = sortFileList(files,COMPARETYPE_NAME); // Date로 Sort실행
+		files = sortFileList(files, COMPARETYPE_NAME); // Date로 Sort실행
 		if (file != null) {
 			for (File _file : files) {
 				// System.out.println(_file.getName() +"\t" + firstPatent);
@@ -127,8 +124,7 @@ public class ScopusEntity extends FileRW {
 	}
 
 	/**
-	 * @param path
-	 *            분석 대상이 있는 파일 패스
+	 * @param path 분석 대상이 있는 파일 패스
 	 */
 	public ScopusEntity() {
 		this("\\\\COREAWIN\\Documents\\Project\\2017\\KISTI-글로벌학술특허정보분석플랫폼-이관재\\여운동\\201712\\data\\특허");
@@ -277,12 +273,12 @@ public class ScopusEntity extends FileRW {
 				while ((line = br.readLine()) != null) {
 					// System.out.println("SCOPUS] " + line);
 					try {
-						//StringTokenizer st = new StringTokenizer(line, "\t");
-						String[] st = line.split("\t");  
-						int stLength=st.length;
+						// StringTokenizer st = new StringTokenizer(line, "\t");
+						String[] st = line.split("\t");
+						int stLength = st.length;
 						if (rowIdx == 0) {
 							int cellIdx = 0;
-							while (cellIdx<stLength) {
+							while (cellIdx < stLength) {
 								String nt = st[cellIdx].trim();
 								clmIdxData.put(nt.toUpperCase(), cellIdx++);
 								cellIdx++;
@@ -305,7 +301,7 @@ public class ScopusEntity extends FileRW {
 						// String source = null;
 						// String aKey = null;
 						// String iKey = null;
-						while (idx<stLength) {
+						while (idx < stLength) {
 							String nt = st[idx];
 							clmData.put(idx++, nt.trim());
 							// if (idx == clmIdxData.get("EID")) {
@@ -358,7 +354,7 @@ public class ScopusEntity extends FileRW {
 						// String countryCode = getMapData(clmData, clmIdxData, "AUTHOR_COUNTRYCODE");
 						String countryCode = getMapData(clmData, clmIdxData, "FIRST_AUTHOR_COUNTRYCODE").toUpperCase()
 								.trim();
-						//System.out.println("************"+countryCode);
+						// System.out.println("************"+countryCode);
 						if ("".equals(countryCode)) {
 							countPerKeyString(this.sm2, "없음");
 						} else {
@@ -433,12 +429,12 @@ public class ScopusEntity extends FileRW {
 				while ((line = br.readLine()) != null) {
 					// System.out.println("SCOPUS] " + line);
 					try {
-						//StringTokenizer st = new StringTokenizer(line, "\t"); //이부분에 코딩에러가 있음
-						String[] st = line.split("\t");  
-						int stLength=st.length;
+						// StringTokenizer st = new StringTokenizer(line, "\t"); //이부분에 코딩에러가 있음
+						String[] st = line.split("\t");
+						int stLength = st.length;
 						if (rowIdx == 0) {
-							int cellIdx = 0;							
-							while (cellIdx<stLength) {
+							int cellIdx = 0;
+							while (cellIdx < stLength) {
 								String nt = st[cellIdx].trim();
 								// System.out.println(nt + "\t" + cellIdx);
 								clmData.put(nt, cellIdx);
@@ -458,7 +454,7 @@ public class ScopusEntity extends FileRW {
 									appnoIdx = cellIdx;
 								} else if ("ipc".equalsIgnoreCase(nt)) {
 									ipcIdx = cellIdx;
-									
+
 								} else if ("appyear".equalsIgnoreCase(nt)) {
 									appYearIdx = cellIdx;
 								} else if ("authority".equalsIgnoreCase(nt)) {
@@ -482,7 +478,7 @@ public class ScopusEntity extends FileRW {
 						String ipc = "";
 						String au = "";
 						String firstIPC = "";
-						while (idx<stLength) {
+						while (idx < stLength) {
 							String nt = st[idx];
 							if (idx == pnoIdx) {
 								pno = nt;
@@ -540,9 +536,6 @@ public class ScopusEntity extends FileRW {
 							}
 							countPerYear(pnyear);
 							countPerKeyString(sm2, au);
-							
-							
-							
 
 							if (assSets.contains("KR")) {
 								countPerKeyString(sm5, "국내특허");

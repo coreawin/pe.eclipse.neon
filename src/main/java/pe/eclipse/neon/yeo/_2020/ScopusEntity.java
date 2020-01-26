@@ -1,6 +1,4 @@
-
-
-package pe.eclipse.neon.yeo._2017.y201712;
+package pe.eclipse.neon.yeo._2020;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,7 +18,16 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public class RainScopusEntity extends FileRW {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import pe.eclipse.neon.yeo._2017.y201712.Dictionary;
+import pe.eclipse.neon.yeo._2017.y201712.ExcelReport;
+import pe.eclipse.neon.yeo._2017.y201712.FileRW;
+
+public class ScopusEntity extends FileRW {
+	
+	Logger log = LoggerFactory.getLogger(getClass().getName());
 
 	File srcPath = null;
 	Boolean isScopus = false;
@@ -32,7 +39,7 @@ public class RainScopusEntity extends FileRW {
 	 * @param path
 	 *            분석 대상이 있는 파일 패스
 	 */
-	public RainScopusEntity(String path) {
+	public ScopusEntity(String path) {
 		srcPath = new File(path);
 		listingFile(srcPath);
 		flist.addAll(0, fslist);
@@ -44,7 +51,7 @@ public class RainScopusEntity extends FileRW {
 			} else if (f.getParent().indexOf("특허") != -1) {
 				isScopus = false;
 			}
-			System.out.println("q read File " + f.getName() + "\t[SCOPUS doc]:" + isScopus);
+//			log.info("q read File " + f.getName() + "\t[SCOPUS doc]:" + isScopus);
 			 ana(f);
 		}
 		// 기술별 지표를 작성한다.
@@ -88,9 +95,9 @@ public class RainScopusEntity extends FileRW {
 		files = sortFileList(files,COMPARETYPE_NAME); // Date로 Sort실행
 		if (file != null) {
 			for (File _file : files) {
-				// System.out.println(_file.getName() +"\t" + firstPatent);
+				// log.info(_file.getName() +"\t" + firstPatent);
 				if (_file.isDirectory()) {
-					// System.out.println("Dir " + _file.getName());
+					// log.info("Dir " + _file.getName());
 					if (_file.getName().indexOf("논문") != -1) {
 						isScopus = true;
 					} else if (_file.getName().indexOf("특허") != -1) {
@@ -130,8 +137,8 @@ public class RainScopusEntity extends FileRW {
 	 * @param path
 	 *            분석 대상이 있는 파일 패스
 	 */
-	public RainScopusEntity() {
-		this("\\\\COREAWIN\\Documents\\Project\\2017\\KISTI-글로벌학술특허정보분석플랫폼-이관재\\여운동\\201712\\data\\특허");
+	public ScopusEntity() {
+		this("");
 	}
 
 	SortedMap<Integer, Integer> sm1 = new TreeMap<Integer, Integer>();
@@ -202,7 +209,7 @@ public class RainScopusEntity extends FileRW {
 		if (datas == null)
 			return;
 		try {
-			// System.out.println(py + "\t" + docuList.keySet());
+			// log.info(py + "\t" + docuList.keySet());
 			LinkedList<String> list = null;
 			list = docuList.get(py);
 			if (list == null) {
@@ -228,6 +235,7 @@ public class RainScopusEntity extends FileRW {
 
 	private String getMapData(Map<Integer, String> clmData, Map<String, Integer> clmIdxData, String fieldName) {
 		String result = " ";
+//		log.info(clmData +"\t" + clmIdxData + "\t" + fieldName);
 		if (fieldName != null) {
 			fieldName = fieldName.toUpperCase().trim();
 		}
@@ -275,7 +283,7 @@ public class RainScopusEntity extends FileRW {
 				HashSet<String> cnSet = new HashSet<String>();
 
 				while ((line = br.readLine()) != null) {
-					// System.out.println("SCOPUS] " + line);
+//					 log.info("SCOPUS] " + line);
 					try {
 						//StringTokenizer st = new StringTokenizer(line, "\t");
 						String[] st = line.split("\t");  
@@ -284,11 +292,11 @@ public class RainScopusEntity extends FileRW {
 							int cellIdx = 0;
 							while (cellIdx<stLength) {
 								String nt = st[cellIdx].trim();
-								clmIdxData.put(nt.toUpperCase(), cellIdx++);
+								clmIdxData.put(nt.toUpperCase(), cellIdx);
 								cellIdx++;
 							}
+//							log.info(clmIdxData);
 							rowIdx++;
-							// System.out.println(clmIdxData);
 							continue;
 						}
 
@@ -350,7 +358,6 @@ public class RainScopusEntity extends FileRW {
 							// countPerKeyString(sm22, cn);
 							// }
 							// }
-							idx++;
 						}
 						// EID Title Publication Year Author Keyword Index Keyword
 						// Number of Citation Country Affiliation Name Source Title
@@ -358,7 +365,7 @@ public class RainScopusEntity extends FileRW {
 						// String countryCode = getMapData(clmData, clmIdxData, "AUTHOR_COUNTRYCODE");
 						String countryCode = getMapData(clmData, clmIdxData, "FIRST_AUTHOR_COUNTRYCODE").toUpperCase()
 								.trim();
-						//System.out.println("************"+countryCode);
+//						log.info("FIRST_AUTHOR_COUNTRYCODE : "+countryCode);
 						if ("".equals(countryCode)) {
 							countPerKeyString(this.sm2, "없음");
 						} else {
@@ -407,7 +414,7 @@ public class RainScopusEntity extends FileRW {
 						buf.append(" \n");
 						// buf.append(Dictionary.getInstance().getASJC(fasjc));
 						// buf.append(" \t");
-						// System.out.println(py);
+						// log.info(py);
 						listDocument(py, buf.toString());
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -431,7 +438,7 @@ public class RainScopusEntity extends FileRW {
 
 				LinkedHashSet<String> cnSet = new LinkedHashSet<String>();
 				while ((line = br.readLine()) != null) {
-					// System.out.println("SCOPUS] " + line);
+					// log.info("SCOPUS] " + line);
 					try {
 						//StringTokenizer st = new StringTokenizer(line, "\t"); //이부분에 코딩에러가 있음
 						String[] st = line.split("\t");  
@@ -440,7 +447,7 @@ public class RainScopusEntity extends FileRW {
 							int cellIdx = 0;							
 							while (cellIdx<stLength) {
 								String nt = st[cellIdx].trim();
-								// System.out.println(nt + "\t" + cellIdx);
+								// log.info(nt + "\t" + cellIdx);
 								clmData.put(nt, cellIdx);
 								if ("pno".equalsIgnoreCase(nt)) {
 									pnoIdx = cellIdx;
@@ -509,7 +516,7 @@ public class RainScopusEntity extends FileRW {
 								for (String _ipc : ipcs) {
 									if (_ipc.length() > 3) {
 										String ip = _ipc.substring(0, 4);
-										System.out.println("aaaaaa:  " + ipcIdx + "   " + ip);
+//										log.info("aaaaaa:  " + ipcIdx + "   " + ip);
 										cnSet.add(ip.trim());
 										firstIPC = _ipc.trim().toUpperCase().replaceAll("\\s", "");
 										// break;
@@ -533,14 +540,16 @@ public class RainScopusEntity extends FileRW {
 							}
 						}
 
-						if (au.isEmpty() != true) {
-							
+						if ("US".equalsIgnoreCase(au) || "EP".equalsIgnoreCase(au) || "WO".equalsIgnoreCase(au)) {
 							for (String _ipc : cnSet) {
 								countPerKeyString(sm3, _ipc);
 								countPerKeyString(sm4, Dictionary.getInstance().findKSCIIPC(_ipc));
 							}
 							countPerYear(pnyear);
 							countPerKeyString(sm2, au);
+							
+							
+							
 
 							if (assSets.contains("KR")) {
 								countPerKeyString(sm5, "국내특허");
@@ -603,6 +612,9 @@ public class RainScopusEntity extends FileRW {
 
 		File f = new File(currentFile);
 		String fileName = f.getName();
+		if(fileName.contains("bulk")) {
+			fileName = fileName.replaceAll("\\.bulk.*$", "")+".txt";
+		}
 		fileName = fileName.substring(0, fileName.lastIndexOf("."));
 
 		if (isScopus) {
@@ -612,7 +624,7 @@ public class RainScopusEntity extends FileRW {
 			// er.createExcelSheetForCountCustom("국가별 논문수", sm2, new String[] { "국가", "논문수"
 			// });
 			한국해외논문건수.put(fileName, sm3.get("국내논문") + ":" + sm3.get("해외논문"));
-			System.out.println("한국 / 해외 논문 수 : " + sm3.get("국내논문") + ":" + sm3.get("해외논문"));
+			log.info("한국 / 해외 논문 수 : {}, <= {}", 한국해외논문건수.get(fileName), fileName);
 
 			// er.createExcelSheetForCountCustom("제1저자의 국가별 논문수", sm2, new String[] {
 			// "제1저자", "논문수" });
@@ -640,13 +652,14 @@ public class RainScopusEntity extends FileRW {
 
 		/** 기본 소수점 세자리에서 반올림 한다. */
 		if (고용산업계수분포율 != null && 고용산업계수분포율.size() > 0) {
-			System.out.println("고용산업계수분포율 : " + 고용산업계수분포율);
+//			log.info("고용산업계수분포율 : " + 고용산업계수분포율);
 			double[] 계수결과 = Dictionary.getInstance().get계수계산(고용산업계수분포율);
 			StringBuilder buf = new StringBuilder();
 			buf.append(fileName);
 			buf.append("\t");
 
 			String _논문건수 = 한국해외논문건수.get(fileName);
+			log.info("_논문건수 : {}", _논문건수);
 			if (_논문건수 != null) {
 				String[] _dd = _논문건수.split(":");
 				buf.append(_dd[0]);
@@ -658,7 +671,7 @@ public class RainScopusEntity extends FileRW {
 			}
 
 			Set<String> sm5Keys = sm5.keySet();
-			// System.out.println(sm5Keys);
+			// log.info(sm5Keys);
 			for (String _sk : sm5Keys) {
 				/** 국내특허 수 / 해외 특허 수 */
 				String v = sm5.get(_sk);
@@ -671,18 +684,18 @@ public class RainScopusEntity extends FileRW {
 			sm5.clear();
 
 			for (double _d : 계수결과) {
-				// System.out.println(_d);
+				// log.info(_d);
 				buf.append(String.format("%.3f", _d));
 				// buf.append(Math.round(_d * p1) / p2);
 				buf.append("\t");
 			}
 			buf.deleteCharAt(buf.length() - 1);
 			기술별계수정보.add(buf.toString());
-			// System.out.println(buf.toString());
+			 log.info(buf.toString());
 
 		}
 		String path = f.getParent() + File.separator + fileName + ".xlsx";
-		System.out.println(" writeFile ; " + path);
+//		log.info(" writeFile ; " + path);
 
 		er.writeExcel(path);
 
@@ -693,7 +706,7 @@ public class RainScopusEntity extends FileRW {
 		Set<String> tdSet = totalDatas.keySet();
 		for (String pno : tdSet) {
 			String ipc = totalDatas.get(pno);
-			// System.out.println(pno + "\t" + ipc);
+			// log.info(pno + "\t" + ipc);
 			if ("".equals(ipc.trim())) {
 				countPerKeyString(totalDatasTech, "None");
 			} else {
@@ -701,25 +714,25 @@ public class RainScopusEntity extends FileRW {
 			}
 		}
 
-		// System.out.println(this.totalDatasTech.size());
+		// log.info(this.totalDatasTech.size());
 		Map<String, String> 고용산업계수분포율_전체 = extractTopRate(this.totalDatasTech, 1000);
 		/** 기본 소수점 세자리에서 반올림 한다. */
 		if (고용산업계수분포율_전체 != null && 고용산업계수분포율_전체.size() > 0) {
-			System.out.println("고용산업계수분포율_전체 항목 : " + 고용산업계수분포율_전체);
+//			log.info("고용산업계수분포율_전체 항목 : " + 고용산업계수분포율_전체);
 			double[] 계수결과 = Dictionary.getInstance().get계수계산(고용산업계수분포율_전체);
 			StringBuilder buf = new StringBuilder();
 			buf.append("전체");
 			buf.append("\t");
 
 			for (double _d : 계수결과) {
-				// System.out.println(_d);
+				// log.info(_d);
 				buf.append(String.format("%.3f", _d));
 				// buf.append(Math.round(_d * p1) / p2);
 				buf.append("\t");
 			}
 			buf.deleteCharAt(buf.length() - 1);
 			기술별계수정보전체.add(buf.toString());
-			System.out.println("====> " + buf.toString());
+//			log.info("기술별계수정보전체 ====> " + buf.toString());
 
 		}
 	}
@@ -756,7 +769,7 @@ public class RainScopusEntity extends FileRW {
 
 			String path = f.getParentFile().getParent() + File.separator + "기술별 계수 정보.xlsx";
 			er2.writeExcel(path);
-			System.out.println("기술별계수정보 : " + path);
+			log.info("기술별계수정보 : " + path);
 
 		}
 	}
@@ -782,14 +795,14 @@ public class RainScopusEntity extends FileRW {
 		vsmv.putAll(map);
 
 		Set<String> ks = vsmv.keySet();
-		// System.out.println(ks);
+		// log.info(ks);
 		int idx = 0;
 		LinkedHashMap<String, String> result = new LinkedHashMap<String, String>();
 		double etcCnt = 0;
 		double lastCnt = 0;
 		double sum = 0d;
 		for (String _key : ks) {
-			// System.out.println(map.get(_key));
+			// log.info(map.get(_key));
 			Object obj = map.get(_key);
 			if (obj == null)
 				continue;
@@ -810,7 +823,7 @@ public class RainScopusEntity extends FileRW {
 			} catch (Exception e) {
 				// ignore
 				e.printStackTrace();
-				System.out.println("===> " + obj);
+				log.info("===> " + obj);
 			}
 			idx++;
 		}
@@ -818,7 +831,7 @@ public class RainScopusEntity extends FileRW {
 			result.put("ETC ", String.valueOf((double) ((etcCnt / total))));
 		}
 		result.put("합계 ", String.valueOf((double) (sum / total)));
-		// System.out.println(result);
+		// log.info(result);
 		// System.exit(01);
 		return result;
 	}
@@ -839,14 +852,14 @@ public class RainScopusEntity extends FileRW {
 		vsmv.putAll(map);
 
 		Set<String> ks = vsmv.keySet();
-		// System.out.println(ks);
+		// log.info(ks);
 		int idx = 0;
 		LinkedHashMap<String, String> result = new LinkedHashMap<String, String>();
 		int etcCnt = 0;
 		int lastCnt = 0;
 		int sum = 0;
 		for (String _key : ks) {
-			// System.out.println(map.get(_key));
+			// log.info(map.get(_key));
 			Object obj = map.get(_key);
 			if (obj == null)
 				continue;
@@ -867,7 +880,7 @@ public class RainScopusEntity extends FileRW {
 			} catch (Exception e) {
 				// ignore
 				e.printStackTrace();
-				System.out.println("===> " + obj);
+				log.info("===> " + obj);
 			}
 			idx++;
 		}
@@ -875,7 +888,7 @@ public class RainScopusEntity extends FileRW {
 			result.put("ETC ", String.valueOf(etcCnt));
 		}
 		result.put("합계 ", String.valueOf(sum));
-		// System.out.println(result);
+		// log.info(result);
 		// System.exit(01);
 		return result;
 	}
@@ -908,7 +921,7 @@ public class RainScopusEntity extends FileRW {
 
 	public static void main(String... args) {
 		// new ScopusEntity("F:\\workspace\\2017\\Test\\data\\");
-		new RainScopusEntity("D:\\mywork\\develop\\my_java\\Test\\data\\");
+		new ScopusEntity("c:\\Users\\coreawin\\OneDrive - hansung.ac.kr\\21.KISTI\\21.여운동\\2020.01.10\\데이터\\");
 		// new ScopusEntity("F:\\workspace\\2017\\Test\\자율형자동차_논문_특허검색\\");
 
 		// Map<String, Integer> sm113 = new TreeMap<String, Integer>();
@@ -921,12 +934,7 @@ public class RainScopusEntity extends FileRW {
 		// Map<String, Integer> vsmv = new TreeMap<String, Integer>(vc);
 		// vsmv.putAll(sm113);
 		//
-		// System.out.println(vsmv);
-		System.out.println("인공강우용으로 만들어진 거야 조심해.. 정말로 조심하라고.. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		System.out.println("인공강우용으로 만들어진 거야 조심해.. 정말로 조심하라고.. ");
-		
+		// log.info(vsmv);
 	}
-	
-	
 
 }
