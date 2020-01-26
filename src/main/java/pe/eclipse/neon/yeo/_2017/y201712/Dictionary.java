@@ -1,7 +1,6 @@
 package pe.eclipse.neon.yeo._2017.y201712;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,9 +90,9 @@ public class Dictionary {
 	}
 
 	private Dictionary() {
-		loadDic(getClass().getResourceAsStream("/yeo/resource/asjc.txt"), FileType.ASJC);
-		loadDic(getClass().getResourceAsStream("/yeo/resource/KSCI_IPC.txt"), FileType.KSCIIPC);
-		loadDic(getClass().getResourceAsStream("/yeo/resource/고용_부가가치_반응도_영향력.txt"), FileType.ETC);
+		loadDic(getClass().getResourceAsStream("/pe/eclipse/neon/yeo/_2017/resource/asjc.txt"), FileType.ASJC);
+		loadDic(getClass().getResourceAsStream("/pe/eclipse/neon/yeo/_2017/resource/KSCI_IPC.txt"), FileType.KSCIIPC);
+		loadDic(getClass().getResourceAsStream("/pe/eclipse/neon/yeo/_2017/resource/고용_부가가치_반응도_영향력.txt"), FileType.ETC);
 
 	}
 

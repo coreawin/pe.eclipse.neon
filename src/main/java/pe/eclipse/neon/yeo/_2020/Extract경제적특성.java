@@ -4,10 +4,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -25,7 +26,7 @@ import pe.eclipse.neon.yeo._2017.y201712.Dictionary;
 import pe.eclipse.neon.yeo._2017.y201712.ExcelReport;
 import pe.eclipse.neon.yeo._2017.y201712.FileRW;
 
-public class ScopusEntity extends FileRW {
+public class Extract경제적특성 extends FileRW {
 	
 	Logger log = LoggerFactory.getLogger(getClass().getName());
 
@@ -39,7 +40,7 @@ public class ScopusEntity extends FileRW {
 	 * @param path
 	 *            분석 대상이 있는 파일 패스
 	 */
-	public ScopusEntity(String path) {
+	public Extract경제적특성(String path) {
 		srcPath = new File(path);
 		listingFile(srcPath);
 		flist.addAll(0, fslist);
@@ -137,7 +138,7 @@ public class ScopusEntity extends FileRW {
 	 * @param path
 	 *            분석 대상이 있는 파일 패스
 	 */
-	public ScopusEntity() {
+	public Extract경제적특성() {
 		this("");
 	}
 
@@ -265,27 +266,9 @@ public class ScopusEntity extends FileRW {
 				int rowIdx = 0;
 				Map<String, Integer> clmIdxData = new HashMap<String, Integer>();
 				Map<Integer, String> clmData = new HashMap<Integer, String>();
-				int eidIdx = 0;
-				int titleIdx = 0;
-				int yearIdx = 0;
-				int frasjcIdx = 0;
-				int asjcIdx = 0;
-				int aainfoIdx = 0;
-				int firstAuthorCnIdx = 0;
-				int firstAuthorIdx = 0;
-				int cnsIdx = 0;
-				int doiIdx = 0;
-				int sourceIdx = 0;
-				int authorIdx = 0;
-				int aKeyIdx = 0;
-				int iKeyIdx = 0;
-				int numCiIdx = 0;
-				HashSet<String> cnSet = new HashSet<String>();
-
 				while ((line = br.readLine()) != null) {
 //					 log.info("SCOPUS] " + line);
 					try {
-						//StringTokenizer st = new StringTokenizer(line, "\t");
 						String[] st = line.split("\t");  
 						int stLength=st.length;
 						if (rowIdx == 0) {
@@ -302,67 +285,10 @@ public class ScopusEntity extends FileRW {
 
 						clmData.clear();
 						int idx = 0;
-						// String eid = null;
-						// String title = null;
-						// String aff = null;
-						// String author = null;
-						// String firstCn = null;
-						// String fasjc = null;
-						// String cnlist = null;
-						// String doi = null;
-						// String source = null;
-						// String aKey = null;
-						// String iKey = null;
 						while (idx<stLength) {
 							String nt = st[idx];
 							clmData.put(idx++, nt.trim());
-							// if (idx == clmIdxData.get("EID")) {
-							// eid = nt;
-							// } else if (idx == clmIdxData.get("FIRST_ASJC")) {
-							// fasjc = nt;
-							// String[] _fasjc = fasjc.split(";");
-							// cnSet.clear();
-							// for (String _c : _fasjc) {
-							// _c = _c.trim();
-							// if ("".equals(_c))
-							// continue;
-							// cnSet.add(_c);
-							// }
-							// for (String fa : cnSet) {
-							// countPerKeyString(sm3, fa);
-							// }
-							// } else if (idx == aainfoIdx) {
-							// aff = nt;
-							// } else if (idx == firstAuthorCnIdx) {
-							// firstCn = nt;
-							// } else if (idx == aKeyIdx) {
-							// aKey = nt;
-							// } else if (idx == iKeyIdx) {
-							// iKey = nt;
-							// }else if (idx == firstAuthorIdx) {
-							// author = nt;
-							// countPerKeyString(sm2, author);
-							// } else if (idx == sourceIdx) {
-							// source = nt;
-							// } else if (idx == cnsIdx) {
-							// cnlist = nt;
-							// String[] _cn = cnlist.split(";");
-							// cnSet.clear();
-							// for (String _c : _cn) {
-							// _c = _c.trim();
-							// if ("".equals(_c))
-							// continue;
-							// cnSet.add(_c);
-							// }
-							// for (String cn : cnSet) {
-							// countPerKeyString(sm22, cn);
-							// }
-							// }
 						}
-						// EID Title Publication Year Author Keyword Index Keyword
-						// Number of Citation Country Affiliation Name Source Title
-
-						// String countryCode = getMapData(clmData, clmIdxData, "AUTHOR_COUNTRYCODE");
 						String countryCode = getMapData(clmData, clmIdxData, "FIRST_AUTHOR_COUNTRYCODE").toUpperCase()
 								.trim();
 //						log.info("FIRST_AUTHOR_COUNTRYCODE : "+countryCode);
@@ -379,17 +305,6 @@ public class ScopusEntity extends FileRW {
 								countPerKeyString(sm3, "해외논문");
 							}
 						}
-
-						// String[] cc = countryCode.split(";");
-						//
-						// cnSet.clear();
-						// for(String _cc : cc) {
-						// if("".equals(_cc.trim())) continue;
-						// cnSet.add(_cc);
-						// }
-						// for(String _cc : cc) {
-						// countPerKeyString(this.sm2, _cc);
-						// }
 
 						String py = getMapData(clmData, clmIdxData, "YEAR");
 						countPerYear(py);
@@ -412,9 +327,6 @@ public class ScopusEntity extends FileRW {
 						buf.append(" \t");
 						buf.append(getMapData(clmData, clmIdxData, "SOURCE_SOURCETITLE"));
 						buf.append(" \n");
-						// buf.append(Dictionary.getInstance().getASJC(fasjc));
-						// buf.append(" \t");
-						// log.info(py);
 						listDocument(py, buf.toString());
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -544,12 +456,10 @@ public class ScopusEntity extends FileRW {
 							for (String _ipc : cnSet) {
 								countPerKeyString(sm3, _ipc);
 								countPerKeyString(sm4, Dictionary.getInstance().findKSCIIPC(_ipc));
+//								log.info(" {}", Dictionary.getInstance().findKSCIIPC(_ipc));
 							}
 							countPerYear(pnyear);
 							countPerKeyString(sm2, au);
-							
-							
-							
 
 							if (assSets.contains("KR")) {
 								countPerKeyString(sm5, "국내특허");
@@ -570,21 +480,7 @@ public class ScopusEntity extends FileRW {
 							buf.append(" \t");
 							buf.append(assSets.toString().replaceAll("[\\[\\]]", ""));
 							buf.append(" \t");
-							// if ("".equals(firstIPC)) {
-							// // buf.append(" \t ");
-							// countPerKeyString(sm4, "None");
-							// // totalDatas.put(pno, " \t ");
-							// } else {
-							// countPerKeyString(sm4, Dictionary.getInstance().findKSCIIPC(firstIPC));
-							// // buf.append(firstIPC + "\t" +
-							// Dictionary.getInstance().findKSCIIPC(firstIPC));
-							// }
 							totalDatas.put(pno, firstIPC);
-
-							// buf.append(" \t");
-							// buf.append(au);
-							// buf.append(" \t");
-							// buf.append(appdate);
 							buf.append("\n");
 							listDocument(appyear, buf.toString());
 						}
@@ -767,7 +663,9 @@ public class ScopusEntity extends FileRW {
 			er2.createExcelSheetForCountCustom3("계수정보전체", 기술계수정보MAP,
 					new String[] { "기술명(파일)", "고용유발계수", "부가가치유발계수(반올림)", "감응도(반올림)", "영향력(반올림)" });
 
-			String path = f.getParentFile().getParent() + File.separator + "기술별 계수 정보.xlsx";
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			
+			String path = f.getParentFile().getParent() + File.separator + format.format(new Date()) + "_기술별 계수 정보.xlsx";
 			er2.writeExcel(path);
 			log.info("기술별계수정보 : " + path);
 
@@ -920,9 +818,9 @@ public class ScopusEntity extends FileRW {
 	}
 
 	public static void main(String... args) {
-		// new ScopusEntity("F:\\workspace\\2017\\Test\\data\\");
-		new ScopusEntity("c:\\Users\\coreawin\\OneDrive - hansung.ac.kr\\21.KISTI\\21.여운동\\2020.01.10\\데이터\\");
-		// new ScopusEntity("F:\\workspace\\2017\\Test\\자율형자동차_논문_특허검색\\");
+		// new Extract경제적특성("F:\\workspace\\2017\\Test\\data\\");
+		new Extract경제적특성("c:\\Users\\coreawin\\OneDrive - hansung.ac.kr\\21.KISTI\\21.여운동\\2020.01.10\\데이터\\");
+		// new Extract경제적특성("F:\\workspace\\2017\\Test\\자율형자동차_논문_특허검색\\");
 
 		// Map<String, Integer> sm113 = new TreeMap<String, Integer>();
 		// sm113.put("A", 200);
