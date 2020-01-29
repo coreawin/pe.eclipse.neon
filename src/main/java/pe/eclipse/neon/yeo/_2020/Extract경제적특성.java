@@ -3,6 +3,7 @@ package pe.eclipse.neon.yeo._2020;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import pe.eclipse.neon.yeo._2017.y201712.ExcelReport;
 import pe.eclipse.neon.yeo._2017.y201712.FileRW;
 
 public class Extract경제적특성 extends FileRW {
-	
+
 	Logger log = LoggerFactory.getLogger(getClass().getName());
 
 	File srcPath = null;
@@ -35,28 +36,35 @@ public class Extract경제적특성 extends FileRW {
 	boolean checkFS = false;
 	Map<String, String> totalDatas = new HashMap<String, String>();
 	Map<String, String> totalDatasTech = new HashMap<String, String>();
+	String techName = "";
 
 	/**
+	 * 해당 path에는 분과별로 데이터가 들어있다.
+	 * 
+	 * @param techName
+	 *            기술분과명
 	 * @param path
-	 *            분석 대상이 있는 파일 패스
+	 *            논문/특허 분석 대상이 있는 파일 패스
 	 */
-	public Extract경제적특성(String path) {
+	public Extract경제적특성(String techName, String path) {
+		this.techName = techName;
 		srcPath = new File(path);
 		listingFile(srcPath);
 		flist.addAll(0, fslist);
 		flist.addAll(flist.size(), fplist);
-		
+
 		for (File f : flist) {
-			if (f.getParent().indexOf("논문") != -1) {
+			if (f.getParent().indexOf("논문") != -1 || f.getParent().indexOf("scopus") != -1) {
 				isScopus = true;
-			} else if (f.getParent().indexOf("특허") != -1) {
+			} else if (f.getParent().indexOf("특허") != -1 || f.getParent().indexOf("patent") != -1) {
 				isScopus = false;
 			}
-//			log.info("q read File " + f.getName() + "\t[SCOPUS doc]:" + isScopus);
-			 ana(f);
+			// log.info("q read File " + f.getName() + "\t[SCOPUS doc]:" +
+			// isScopus);
+			ana(f);
 		}
 		// 기술별 지표를 작성한다.
-		 createReport기술별계수정보();
+		createReport기술별계수정보();
 	}
 
 	List<File> fslist = new LinkedList<File>();
@@ -83,7 +91,11 @@ public class Extract경제적특성 extends FileRW {
 					s2 = ((File) object2).lastModified() + "";
 				}
 
-				return -s1.compareTo(s2);
+				if (s1.toLowerCase().startsWith("scopus") | s1.toLowerCase().startsWith("patent")) {
+					return -s2.compareTo(s1);
+				} else {
+					return -s1.compareTo(s2);
+				}
 
 			}
 		});
@@ -93,15 +105,16 @@ public class Extract경제적특성 extends FileRW {
 
 	private void listingFile(File file) {
 		File[] files = file.listFiles();
-		files = sortFileList(files,COMPARETYPE_NAME); // Date로 Sort실행
+
+		files = sortFileList(files, COMPARETYPE_NAME); // Date로 Sort실행
 		if (file != null) {
 			for (File _file : files) {
-				// log.info(_file.getName() +"\t" + firstPatent);
+				// log.info(_file.getAbsolutePath());
 				if (_file.isDirectory()) {
 					// log.info("Dir " + _file.getName());
-					if (_file.getName().indexOf("논문") != -1) {
+					if (_file.getParent().indexOf("논문") != -1 || _file.getParent().indexOf("scopus") != -1) {
 						isScopus = true;
-					} else if (_file.getName().indexOf("특허") != -1) {
+					} else if (_file.getParent().indexOf("특허") != -1 || _file.getParent().indexOf("patent") != -1) {
 						isScopus = false;
 					}
 					listingFile(_file);
@@ -132,14 +145,6 @@ public class Extract경제적특성 extends FileRW {
 		currentFile = _file.getAbsolutePath();
 		readline(br);
 		// System.exit(1);
-	}
-
-	/**
-	 * @param path
-	 *            분석 대상이 있는 파일 패스
-	 */
-	public Extract경제적특성() {
-		this("");
 	}
 
 	SortedMap<Integer, Integer> sm1 = new TreeMap<Integer, Integer>();
@@ -225,6 +230,7 @@ public class Extract경제적특성 extends FileRW {
 	}
 
 	private void init() {
+		// log.info("자료구조 초기화");
 		sm1.clear();
 		sm2.clear();
 		sm22.clear();
@@ -236,7 +242,7 @@ public class Extract경제적특성 extends FileRW {
 
 	private String getMapData(Map<Integer, String> clmData, Map<String, Integer> clmIdxData, String fieldName) {
 		String result = " ";
-//		log.info(clmData +"\t" + clmIdxData + "\t" + fieldName);
+		// log.info(clmData +"\t" + clmIdxData + "\t" + fieldName);
 		if (fieldName != null) {
 			fieldName = fieldName.toUpperCase().trim();
 		}
@@ -267,31 +273,30 @@ public class Extract경제적특성 extends FileRW {
 				Map<String, Integer> clmIdxData = new HashMap<String, Integer>();
 				Map<Integer, String> clmData = new HashMap<Integer, String>();
 				while ((line = br.readLine()) != null) {
-//					 log.info("SCOPUS] " + line);
+					// log.info("SCOPUS] " + line);
 					try {
-						String[] st = line.split("\t");  
-						int stLength=st.length;
+						String[] st = line.split("\t");
+						int stLength = st.length;
 						if (rowIdx == 0) {
 							int cellIdx = 0;
-							while (cellIdx<stLength) {
+							while (cellIdx < stLength) {
 								String nt = st[cellIdx].trim();
 								clmIdxData.put(nt.toUpperCase(), cellIdx);
 								cellIdx++;
 							}
-//							log.info(clmIdxData);
+							// log.info(clmIdxData);
 							rowIdx++;
 							continue;
 						}
 
 						clmData.clear();
 						int idx = 0;
-						while (idx<stLength) {
+						while (idx < stLength) {
 							String nt = st[idx];
 							clmData.put(idx++, nt.trim());
 						}
-						String countryCode = getMapData(clmData, clmIdxData, "FIRST_AUTHOR_COUNTRYCODE").toUpperCase()
-								.trim();
-//						log.info("FIRST_AUTHOR_COUNTRYCODE : "+countryCode);
+						String countryCode = getMapData(clmData, clmIdxData, "FIRST_AUTHOR_COUNTRYCODE").toUpperCase().trim();
+						// log.info("FIRST_AUTHOR_COUNTRYCODE : "+countryCode);
 						if ("".equals(countryCode)) {
 							countPerKeyString(this.sm2, "없음");
 						} else {
@@ -352,12 +357,13 @@ public class Extract경제적특성 extends FileRW {
 				while ((line = br.readLine()) != null) {
 					// log.info("SCOPUS] " + line);
 					try {
-						//StringTokenizer st = new StringTokenizer(line, "\t"); //이부분에 코딩에러가 있음
-						String[] st = line.split("\t");  
-						int stLength=st.length;
+						// StringTokenizer st = new StringTokenizer(line, "\t");
+						// //이부분에 코딩에러가 있음
+						String[] st = line.split("\t");
+						int stLength = st.length;
 						if (rowIdx == 0) {
-							int cellIdx = 0;							
-							while (cellIdx<stLength) {
+							int cellIdx = 0;
+							while (cellIdx < stLength) {
 								String nt = st[cellIdx].trim();
 								// log.info(nt + "\t" + cellIdx);
 								clmData.put(nt, cellIdx);
@@ -377,7 +383,7 @@ public class Extract경제적특성 extends FileRW {
 									appnoIdx = cellIdx;
 								} else if ("ipc".equalsIgnoreCase(nt)) {
 									ipcIdx = cellIdx;
-									
+
 								} else if ("appyear".equalsIgnoreCase(nt)) {
 									appYearIdx = cellIdx;
 								} else if ("authority".equalsIgnoreCase(nt)) {
@@ -401,7 +407,7 @@ public class Extract경제적특성 extends FileRW {
 						String ipc = "";
 						String au = "";
 						String firstIPC = "";
-						while (idx<stLength) {
+						while (idx < stLength) {
 							String nt = st[idx];
 							if (idx == pnoIdx) {
 								pno = nt;
@@ -428,7 +434,8 @@ public class Extract경제적특성 extends FileRW {
 								for (String _ipc : ipcs) {
 									if (_ipc.length() > 3) {
 										String ip = _ipc.substring(0, 4);
-//										log.info("aaaaaa:  " + ipcIdx + "   " + ip);
+										// log.info("aaaaaa:  " + ipcIdx + "   "
+										// + ip);
 										cnSet.add(ip.trim());
 										firstIPC = _ipc.trim().toUpperCase().replaceAll("\\s", "");
 										// break;
@@ -438,9 +445,11 @@ public class Extract경제적특성 extends FileRW {
 							idx++;
 						}
 
-						// ti application-number application-Year assignee-country
+						// ti application-number application-Year
+						// assignee-country
 
-						// GB`LOUGHBOROUGH UNIVERSITY OF TECHNOLOGY;GB`ADCOCK PAUL
+						// GB`LOUGHBOROUGH UNIVERSITY OF TECHNOLOGY;GB`ADCOCK
+						// PAUL
 						Set<String> assSets = new LinkedHashSet<>();
 						String[] asss = assignee.split(";");
 						for (String _asss : asss) {
@@ -456,7 +465,9 @@ public class Extract경제적특성 extends FileRW {
 							for (String _ipc : cnSet) {
 								countPerKeyString(sm3, _ipc);
 								countPerKeyString(sm4, Dictionary.getInstance().findKSCIIPC(_ipc));
-//								log.info(" {}", Dictionary.getInstance().findKSCIIPC(_ipc));
+								// log.info("Dictionary.getInstance().findKSCIIPC {} /  {}",
+								// _ipc,
+								// Dictionary.getInstance().findKSCIIPC(_ipc));
 							}
 							countPerYear(pnyear);
 							countPerKeyString(sm2, au);
@@ -508,8 +519,8 @@ public class Extract경제적특성 extends FileRW {
 
 		File f = new File(currentFile);
 		String fileName = f.getName();
-		if(fileName.contains("bulk")) {
-			fileName = fileName.replaceAll("\\.bulk.*$", "")+".txt";
+		if (fileName.contains("bulk")) {
+			fileName = fileName.replaceAll("\\.bulk.*$", "") + ".txt";
 		}
 		fileName = fileName.substring(0, fileName.lastIndexOf("."));
 
@@ -517,26 +528,33 @@ public class Extract경제적특성 extends FileRW {
 
 			er.createExcelSheetForCount(sm1);
 			er.createExcelSheetForCountCustom("제1저자의 국가별 논문수", sm2, new String[] { "제1저자", "논문수" });
-			// er.createExcelSheetForCountCustom("국가별 논문수", sm2, new String[] { "국가", "논문수"
+			// er.createExcelSheetForCountCustom("국가별 논문수", sm2, new String[] {
+			// "국가", "논문수"
 			// });
 			한국해외논문건수.put(fileName, sm3.get("국내논문") + ":" + sm3.get("해외논문"));
-			log.info("한국 / 해외 논문 수 : {}, <= {}", 한국해외논문건수.get(fileName), fileName);
+			// log.info("한국 / 해외 논문 수 : {}, <= {}", 한국해외논문건수.get(fileName),
+			// fileName);
 
-			// er.createExcelSheetForCountCustom("제1저자의 국가별 논문수", sm2, new String[] {
+			// er.createExcelSheetForCountCustom("제1저자의 국가별 논문수", sm2, new
+			// String[] {
 			// "제1저자", "논문수" });
 			// er.createExcelSheetForCountCustom("주저자의 국가별 논문수\n상위 10위",
 			// extractTopCount(sm22, 10), new String[] { "국가", "논문수" });
-			// er.createExcelSheetForRateCustom("기술분류별 점유율", extractTopRate(sm3, 5), new
+			// er.createExcelSheetForRateCustom("기술분류별 점유율", extractTopRate(sm3,
+			// 5), new
 			// String[] { "분류", "점유율" });
 			er.createExcelSheetForDocumentList("논문 리스트", docuList);
 
 		} else {
 			// er.createExcelSheetForCount(sm1);
-			// er.createExcelSheetForCountCustom("국가통계", sm22, new String[] {"출원인 국가",
+			// er.createExcelSheetForCountCustom("국가통계", sm22, new String[]
+			// {"출원인 국가",
 			// "특허수"});
-			// er.createExcelSheetForCountCustom("출원국(특허청)", sm2, new String[] {"출원국(특허청)",
+			// er.createExcelSheetForCountCustom("출원국(특허청)", sm2, new String[]
+			// {"출원국(특허청)",
 			// "특허수"});
-			// er.createExcelSheetForRateCustom("기술분류별 점유율", extractTopRate(sm3, 5), new
+			// er.createExcelSheetForRateCustom("기술분류별 점유율", extractTopRate(sm3,
+			// 5), new
 			// String[] { "IPC", "점유율" });
 			고용산업계수분포율 = extractTopRate(sm4, 1000);
 			er.createExcelSheetForRateCustom("KSCI 산업 분포율", 고용산업계수분포율, new String[] { "산업명", "분포율" }, "");
@@ -548,14 +566,14 @@ public class Extract경제적특성 extends FileRW {
 
 		/** 기본 소수점 세자리에서 반올림 한다. */
 		if (고용산업계수분포율 != null && 고용산업계수분포율.size() > 0) {
-//			log.info("고용산업계수분포율 : " + 고용산업계수분포율);
+			// log.info("고용산업계수분포율 : " + 고용산업계수분포율);
 			double[] 계수결과 = Dictionary.getInstance().get계수계산(고용산업계수분포율);
 			StringBuilder buf = new StringBuilder();
 			buf.append(fileName);
 			buf.append("\t");
 
 			String _논문건수 = 한국해외논문건수.get(fileName);
-			log.info("_논문건수 : {}", _논문건수);
+			// log.info("ISSCOPUS {}, _논문건수 : {}", isScopus, _논문건수);
 			if (_논문건수 != null) {
 				String[] _dd = _논문건수.split(":");
 				buf.append(_dd[0]);
@@ -587,11 +605,11 @@ public class Extract경제적특성 extends FileRW {
 			}
 			buf.deleteCharAt(buf.length() - 1);
 			기술별계수정보.add(buf.toString());
-			 log.info(buf.toString());
+			// log.info("기술별계수정보 : " + buf.toString());
 
 		}
 		String path = f.getParent() + File.separator + fileName + ".xlsx";
-//		log.info(" writeFile ; " + path);
+		// log.info(" writeFile ; " + path);
 
 		er.writeExcel(path);
 
@@ -614,7 +632,7 @@ public class Extract경제적특성 extends FileRW {
 		Map<String, String> 고용산업계수분포율_전체 = extractTopRate(this.totalDatasTech, 1000);
 		/** 기본 소수점 세자리에서 반올림 한다. */
 		if (고용산업계수분포율_전체 != null && 고용산업계수분포율_전체.size() > 0) {
-//			log.info("고용산업계수분포율_전체 항목 : " + 고용산업계수분포율_전체);
+			// log.info("고용산업계수분포율_전체 항목 : " + 고용산업계수분포율_전체);
 			double[] 계수결과 = Dictionary.getInstance().get계수계산(고용산업계수분포율_전체);
 			StringBuilder buf = new StringBuilder();
 			buf.append("전체");
@@ -628,10 +646,12 @@ public class Extract경제적특성 extends FileRW {
 			}
 			buf.deleteCharAt(buf.length() - 1);
 			기술별계수정보전체.add(buf.toString());
-//			log.info("기술별계수정보전체 ====> " + buf.toString());
+			// log.info("기술별계수정보전체 ====> " + buf.toString());
 
 		}
 	}
+
+	final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
 	/**
 	 * 기술별 계수정보를 출력한다.<br>
@@ -640,36 +660,42 @@ public class Extract경제적특성 extends FileRW {
 	private void createReport기술별계수정보() {
 		ExcelReport er2 = new ExcelReport(isScopus);
 		/**
-		 * 여기서의 currentFile은 가장 마지막에 분석한 작업파일명이 되고 그 파일의 바로 윗폴더에 최종 계수정보 보고서가 생성.
+		 * 여기서의 currentFile은 가장 마지막에 분석한 작업파일명이 되고 그 파일의 바로 윗폴더에 최종 계수정보 보고서가
+		 * 생성.
 		 */
 		File f = new File(currentFile);
-		if (sm4.size() > 0) {
-			Map<String, String[]> 기술계수정보MAP = new LinkedHashMap<String, String[]>();
-			for (String _datas : 기술별계수정보) {
-				String[] result = _datas.split("\t");
-				String techName = result[0];
-				기술계수정보MAP.put(techName, Arrays.copyOfRange(result, 1, result.length));
-			}
-			er2.createExcelSheetForCountCustom3("계수정보", 기술계수정보MAP, new String[] { "기술명(파일)", "국내논문", "해외논문", "국내특허",
-					"해외특허", "고용유발계수", "부가가치유발계수(반올림)", "감응도(반올림)", "영향력(반올림)" });
-
-			createReportForTechAll();
-			기술계수정보MAP = new LinkedHashMap<String, String[]>();
-			for (String _datas : 기술별계수정보전체) {
-				String[] result = _datas.split("\t");
-				String techName = result[0];
-				기술계수정보MAP.put(techName, Arrays.copyOfRange(result, 1, result.length));
-			}
-			er2.createExcelSheetForCountCustom3("계수정보전체", 기술계수정보MAP,
-					new String[] { "기술명(파일)", "고용유발계수", "부가가치유발계수(반올림)", "감응도(반올림)", "영향력(반올림)" });
-
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			
-			String path = f.getParentFile().getParent() + File.separator + format.format(new Date()) + "_기술별 계수 정보.xlsx";
-			er2.writeExcel(path);
-			log.info("기술별계수정보 : " + path);
-
+		log.info("리포팅 생성 파일 : {} ",
+				f.getParentFile().getParent() + File.separator + this.techName + "_" + format.format(new Date())
+						+ "_기술별 계수 정보.xlsx");
+		log.info("출력 데이터 크기 {} ", sm4.size());
+		// if (sm4.size() > 0) {
+		Map<String, String[]> 기술계수정보MAP = new LinkedHashMap<String, String[]>();
+		for (String _datas : 기술별계수정보) {
+			String[] result = _datas.split("\t");
+			String techName = result[0];
+			// for(String _r : result){
+			// log.info(_r);
+			// }
+			기술계수정보MAP.put(techName, Arrays.copyOfRange(result, 1, result.length));
 		}
+		er2.createExcelSheetForCountCustom3("계수정보", 기술계수정보MAP, new String[] { "기술명(파일)", "국내논문", "해외논문", "국내특허", "해외특허",
+				"고용유발계수", "부가가치유발계수(반올림)", "감응도(반올림)", "영향력(반올림)" });
+
+		createReportForTechAll();
+		기술계수정보MAP = new LinkedHashMap<String, String[]>();
+		for (String _datas : 기술별계수정보전체) {
+			String[] result = _datas.split("\t");
+			String techName = result[0];
+			기술계수정보MAP.put(techName, Arrays.copyOfRange(result, 1, result.length));
+		}
+		er2.createExcelSheetForCountCustom3("계수정보전체", 기술계수정보MAP, new String[] { "기술명(파일)", "고용유발계수", "부가가치유발계수(반올림)",
+				"감응도(반올림)", "영향력(반올림)" });
+
+		String path = f.getParentFile().getParent() + File.separator + this.techName + "_" + format.format(new Date())
+				+ "_기술별 계수 정보.xlsx";
+		er2.writeExcel(path);
+		log.info("기술별계수정보 : " + path);
+		// }
 	}
 
 	@Override
@@ -814,25 +840,28 @@ public class Extract경제적특성 extends FileRW {
 			}
 			return 1;
 		}
-
 	}
 
-	public static void main(String... args) {
-		// new Extract경제적특성("F:\\workspace\\2017\\Test\\data\\");
-		new Extract경제적특성("c:\\Users\\coreawin\\OneDrive - hansung.ac.kr\\21.KISTI\\21.여운동\\2020.01.10\\데이터\\");
-		// new Extract경제적특성("F:\\workspace\\2017\\Test\\자율형자동차_논문_특허검색\\");
+	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-		// Map<String, Integer> sm113 = new TreeMap<String, Integer>();
-		// sm113.put("A", 200);
-		// sm113.put("AB", 100);
-		// sm113.put("ABQ", 30);
-		// sm113.put("ABC", 500);
-		//
-		// ValueComparator vc = new ValueComparator(sm113);
-		// Map<String, Integer> vsmv = new TreeMap<String, Integer>(vc);
-		// vsmv.putAll(sm113);
-		//
-		// log.info(vsmv);
+	public static void main(String... args) {
+		final String 작업일 = dateFormat.format(new Date());
+		final String path = "d:\\data\\2020\\yeo\\20200128\\";
+		final File dir = new File(path);
+
+		if (dir.isDirectory()) {
+			File[] dirs = dir.listFiles();
+			for (File _dir : dirs) {
+				if (_dir.isDirectory()) {
+					String 기술분과명 = _dir.getName();
+					System.out.println(_dir.getAbsolutePath());
+					/* 특성상 반드시 특허부터 읽어야 한다. */
+					new Extract경제적특성(기술분과명, _dir.getAbsolutePath());
+				}
+			}
+		}
+
+		// new Extract경제적특성("d:/data/test");
 	}
 
 }
