@@ -120,7 +120,7 @@ public class Dictionary {
 			
 		}
 		double[] totals = new double[] { 0d, 0d, 0d, 0d };
-//		System.out.println("분포율.keySet() " + 분포율);
+		System.out.println("분포율.keySet() " + 분포율);
 		for (String _ipc : 분포율.keySet()) {
 			if("none".equalsIgnoreCase(_ipc.trim())) continue;
 			char fChat = _ipc.toUpperCase().charAt(0);
@@ -130,26 +130,26 @@ public class Dictionary {
 				productName = findKSCIIPC(_ipc);
 			}
 
-//			System.out.println("상품명 > " + productName);
+			System.out.println("상품명 > " + productName);
 			if (productName == null || "".equalsIgnoreCase(productName)) {
 				continue;
 			} else {
 				String reProductName = productName.replaceAll("\\s", "").replaceAll("[,\";]", "");
-//				System.out.println("productName : " + productName);
-//				System.out.println("reProductName : " + reProductName);
+				System.out.println("productName : " + productName);
+				System.out.println("reProductName : " + reProductName);
 				if (this.계수Map.containsKey(reProductName)) {
 					double[] _value = get계수정보(reProductName);
 					for (int idx = 0; idx < totals.length; idx++) {
 						totals[idx] += (Double.parseDouble(분포율.get(_ipc)) * _value[idx]);
-//						System.out.println(reProductName + " values " + totals[idx] +"\t" + (Double.parseDouble(분포율.get(_ipc)) +"\t" + _value[idx]));
+						System.out.println(reProductName + " values " + totals[idx] +"\t" + (Double.parseDouble(분포율.get(_ipc)) +"\t" + _value[idx]));
 					}
-//					System.out.println("상품명 항목 계산 완료 > " + productName);
+					System.out.println("상품명 항목 계산 완료 > " + productName);
 				}
 			}
 		}
-//		System.out.println("순서대로 고용유발계수	부가가치유발계수(반올림)	감응도(반올림)	영향력(반올림)");
+		System.out.println("순서대로 고용유발계수	부가가치유발계수(반올림)	감응도(반올림)	영향력(반올림)");
 		for (double _d : totals) {
-//			System.out.println("값 확인 " + _d);
+			System.out.println("값 확인 " + _d);
 		}
 		return totals;
 	}

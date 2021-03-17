@@ -51,7 +51,7 @@ public abstract class FileRW {
 		}
 	}
 
-	public abstract void readline(BufferedReader br);
+	public abstract void readline(BufferedReader br) throws Exception;
 
 	public abstract void writerline(BufferedWriter bw);
 
